@@ -1,0 +1,13 @@
+# Zindi challenge files are not redistributed: download them from the challenge page into the repo root
+/Train.csv
+/Test.csv
+/SampleSubmission.csv
+/Stations.csv
+/DataDictionary.txt
+/submission*.csv
+/AdditionalHistory/
+ext/
+snapshots/
+creative/raw/
+__pycache__/
+*.pyc

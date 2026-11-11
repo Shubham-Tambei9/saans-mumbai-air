@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saans · Living city</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --panel: rgba(16,18,24,.78); --line: rgba(255,255,255,.14); --ink: #f0efec; --ink2: #c3c2b7; --muted: #9a9890; --accent: #3987e5;
+  --font: "Noto Sans", "Noto Sans Devanagari", system-ui, -apple-system, "Segoe UI", sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1226; color: var(--ink); font: 14px/1.45 var(--font); }
+canvas#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.panel { position: fixed; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; backdrop-filter: blur(8px); }
+#top { top: 12px; left: 12px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; }
+#top a { color: var(--ink2); text-decoration: none; font-size: 13px; }
+#top b { font-size: 17px; letter-spacing: -.01em; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { border: 0; background: transparent; color: var(--ink2); font: inherit; font-size: 12.5px; padding: 4px 10px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: #101218; }
+#stats { top: 12px; right: 12px; width: 250px; }
+#stats .lab { font-size: 12px; color: var(--ink2); }
+#stats .big { font-size: 44px; font-weight: 700; line-height: 1; margin: 4px 0 4px; letter-spacing: -.02em; }
+#stats .big small { font-size: 14px; font-weight: 500; color: var(--ink2); letter-spacing: 0; }
+.badge { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; }
+.badge i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.row { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 5px 0; border-top: 1px solid var(--line); margin-top: 6px; }
+.row span { color: var(--ink2); } .row b { font-weight: 600; }
+#arrow { display: inline-block; transition: transform .3s; }
+#side { left: 12px; top: 70px; width: 215px; display: grid; gap: 8px; }
+#side .lab { font-size: 12px; color: var(--ink2); }
+#side label { display: flex; align-items: center; gap: 7px; font-size: 13px; cursor: pointer; }
+#side input { accent-color: var(--accent); }
+.btn { border: 1px solid var(--line); background: rgba(255,255,255,.06); color: var(--ink); font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.btn.on { background: var(--accent); border-color: transparent; color: #fff; }
+#bottom { left: 12px; right: 12px; bottom: 12px; display: grid; gap: 8px; }
+#timeRow { display: flex; align-items: center; gap: 12px; }
+#timeRow input { flex: 1; accent-color: var(--accent); }
+#clock { font-weight: 600; min-width: 170px; }
+#story { color: var(--ink2); font-size: 13.5px; min-height: 20px; }
+#legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 12px; color: var(--ink2); }
+#grad { display: grid; gap: 2px; min-width: 260px; flex: 1 1 260px; max-width: 420px; }
+#grad .bar { height: 8px; border-radius: 4px; }
+#grad .ticks { display: flex; justify-content: space-between; }
+.lbl { position: fixed; transform: translate(-50%, -100%); pointer-events: none; font-size: 12px; font-weight: 600; white-space: nowrap;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 2px 8px; }
+.lbl small { font-weight: 500; color: var(--ink2); }
+.lbl.dump { font-weight: 500; color: var(--ink2); font-size: 11px; }
+#tip { position: fixed; pointer-events: none; display: none; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 12.5px; min-width: 170px; z-index: 5; }
+#tip .t { font-weight: 600; margin-bottom: 3px; } #tip div span { color: var(--ink2); }
+#fail { position: fixed; inset: 0; display: none; place-items: center; text-align: center; padding: 24px; }
+#bottom { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 760px) {
+  #side { display: none; }
+  #top { right: 12px; flex-wrap: wrap; gap: 8px; padding: 6px 10px; }
+  #top [data-i="title"] { display: none; }
+  #stats { top: 62px; right: 12px; left: auto; width: 168px; padding: 8px 10px; }
+  #stats .big { font-size: 28px; } #stats .row { font-size: 12px; padding: 3px 0; margin-top: 3px; }
+  #timeRow { flex-wrap: wrap; gap: 6px 10px; } #timeRow input { flex: 1 1 180px; } #clock { min-width: 0; font-size: 13px; }
+  #grad { min-width: 0; flex-basis: 100%; } #grad .ticks { font-size: 9.5px; }
+  #legend { font-size: 11px; } #story { font-size: 12.5px; }
+  .lbl { font-size: 10.5px; padding: 1px 6px; }
+}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="labels"></div>
+<div class="panel" id="top">
+  <b>Saans</b> <span data-i="title">Living city</span>
+  <a href="index.html" data-i="back">← Map &amp; details</a>
+  <div class="seg" role="group" aria-label="Language"><button data-lang="en">EN</button><button data-lang="hi">हिंदी</button><button data-lang="mr">मराठी</button></div>
+</div>
+<div class="panel" id="stats">
+  <div class="lab" data-i="cityNow">City average PM2.5</div>
+  <div class="big"><span id="pmNow"></span> <small>µg/m³</small></div>
+  <div class="badge" id="band"></div>
+  <div class="row"><span data-i="wind">Wind</span><b><span id="arrow">↑</span> <span id="windTxt"></span></b></div>
+  <div class="row"><span data-i="lid">Mixing height</span><b id="lidTxt"></b></div>
+</div>
+<div class="panel" id="side">
+  <div class="lab" data-i="height">Show the city as</div>
+  <div class="seg" role="group" id="metric" style="flex-wrap:wrap;border-radius:12px"><button data-m="bld" data-i="mBld">Buildings</button><button data-m="pop" data-i="mPop">People</button><button data-m="kids" data-i="mKids">Children</button><button data-m="eld" data-i="mEld">65+</button></div>
+  <label><input type="checkbox" id="cWind" checked> <span data-i="lWind">Wind &amp; haze</span></label>
+  <label><input type="checkbox" id="cLid" checked> <span data-i="lLid">Mixing-height lid</span></label>
+  <label><input type="checkbox" id="cParks" checked> <span data-i="lParks">Parks</span></label>
+  <label><input type="checkbox" id="cDump" checked> <span data-i="lDump">Dumping grounds</span></label>
+  <button class="btn on" id="tour" data-i="tour">Auto tour</button>
+</div>
+<div class="panel" id="bottom">
+  <div id="story" aria-live="polite"></div>
+  <div id="timeRow"><button class="btn" id="play" aria-label="Play or pause">❚❚</button><input type="range" id="time" min="0" step="1" aria-label="Forecast hour"><div id="clock"></div></div>
+  <div id="legend"><div id="grad"><div class="bar"></div><div class="ticks"></div></div><span id="legTxt"></span></div>
+</div>
+<div id="tip"></div>
+<div id="fail"><div><h2>3D view needs WebGL</h2><p><a href="index.html" style="color:#8ab4f8">Open the map version instead</a></p></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="data.js"></script>
+<script src="buildings.js"></script>
+<script>
+(() => {
+window.onerror = (m) => { document.title = 'ERR ' + m; };
+const S = window.SAANS, $ = s => document.querySelector(s);
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+const VEX = 2.5;   // vertical exaggeration of real building heights
+const T = {
+ en: { title: 'Living city', back: '← Map & details', cityNow: 'City average PM2.5', wind: 'Wind', lid: 'Mixing height', height: 'Show the city as', mBld: 'Buildings', legB: n => `${n} real buildings with their heights (3D-GloBFP, drawn ${VEX}× taller). Ground and haze colour = forecast PM2.5. Dark green discs = parks.`,
+  mPop: 'People', mKids: 'Children', mEld: '65+', lWind: 'Wind & haze', lLid: 'Mixing-height lid', lParks: 'Parks', lDump: 'Dumping grounds', tour: 'Auto tour',
+  legH: 'Each tower is a 1 km square. Height = people living there. Colour = forecast PM2.5.',
+  q: ['Good', 'Satisfactory', 'Moderate', 'Poor', 'Very poor', 'Severe'], from: 'from', people: 'People', kids: 'Children under 5', eld: 'Adults 65+', park: 'Park', miyawaki: 'Miyawaki garden', zoo: 'Zoo',
+  dirs: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
+  s1: m => `Mixing height is only ${m} m, so pollution is trapped near the ground.`, s2: m => `Mixing height is ${m} m: the air is mixing, and pollution is thinning out.`,
+  s3: m => `Mixing height is ${m} m: the lid is lifting and the air can clear.`, calm: 'Winds are light, so smoke stays where it is made.' },
+ hi: { title: 'जीवंत शहर', back: '← नक्शा और विवरण', cityNow: 'शहर का औसत PM2.5', wind: 'हवा', lid: 'मिश्रण ऊँचाई', height: 'शहर ऐसे दिखाएँ', mBld: 'इमारतें', legB: n => `${n} असली इमारतें अपनी ऊँचाई के साथ (3D-GloBFP, ${VEX}× ऊँची दिखाई गईं)। ज़मीन और धुंध का रंग = PM2.5 पूर्वानुमान। गहरे हरे गोले = उद्यान।`,
+  mPop: 'लोग', mKids: 'बच्चे', mEld: '65+', lWind: 'हवा और धुंध', lLid: 'मिश्रण-ऊँचाई की परत', lParks: 'उद्यान', lDump: 'डंपिंग मैदान', tour: 'स्वचालित सैर',
+  legH: 'हर टावर 1 किमी का वर्ग है। ऊँचाई = वहाँ रहने वाले लोग। रंग = PM2.5 पूर्वानुमान।',
+  q: ['अच्छा', 'संतोषजनक', 'मध्यम', 'खराब', 'बहुत खराब', 'गंभीर'], from: 'से', people: 'लोग', kids: '5 साल से छोटे बच्चे', eld: '65+ उम्र के लोग', park: 'उद्यान', miyawaki: 'मियावाकी वन', zoo: 'चिड़ियाघर',
+  dirs: ['उत्तर', 'उत्तर-पूर्व', 'पूर्व', 'दक्षिण-पूर्व', 'दक्षिण', 'दक्षिण-पश्चिम', 'पश्चिम', 'उत्तर-पश्चिम'],
+  s1: m => `मिश्रण ऊँचाई सिर्फ़ ${m} मी है, इसलिए प्रदूषण ज़मीन के पास फँसा है।`, s2: m => `मिश्रण ऊँचाई ${m} मी है: हवा घुल रही है और प्रदूषण पतला हो रहा है।`,
+  s3: m => `मिश्रण ऊँचाई ${m} मी है: परत उठ रही है और हवा साफ़ हो सकती है।`, calm: 'हवा धीमी है, इसलिए धुआँ वहीं रुका रहता है।' },
+ mr: { title: 'जिवंत शहर', back: '← नकाशा आणि तपशील', cityNow: 'शहराची सरासरी PM2.5', wind: 'वारा', lid: 'मिश्रण उंची', height: 'शहर असे दाखवा', mBld: 'इमारती', legB: n => `${n} खऱ्या इमारती त्यांच्या उंचीसह (3D-GloBFP, ${VEX}× उंच दाखवल्या). जमीन आणि धुक्याचा रंग = PM2.5 अंदाज. गडद हिरवे ठिपके = उद्याने.`,
+  mPop: 'लोक', mKids: 'मुले', mEld: '65+', lWind: 'वारा आणि धुके', lLid: 'मिश्रण-उंचीचा थर', lParks: 'उद्याने', lDump: 'कचराभूमी', tour: 'स्वयंचलित फेरी',
+  legH: 'प्रत्येक मनोरा 1 किमीचा चौरस आहे. उंची = तिथे राहणारे लोक. रंग = PM2.5 अंदाज.',
+  q: ['चांगली', 'समाधानकारक', 'मध्यम', 'वाईट', 'खूप वाईट', 'गंभीर'], from: 'कडून', people: 'लोक', kids: '5 वर्षांखालील मुले', eld: '65+ वयाचे लोक', park: 'उद्यान', miyawaki: 'मियावाकी वन', zoo: 'प्राणिसंग्रहालय',
+  dirs: ['उत्तर', 'ईशान्य', 'पूर्व', 'आग्नेय', 'दक्षिण', 'नैऋत्य', 'पश्चिम', 'वायव्य'],
+  s1: m => `मिश्रण उंची फक्त ${m} मी आहे, त्यामुळे प्रदूषण जमिनीजवळ अडकले आहे.`, s2: m => `मिश्रण उंची ${m} मी आहे: हवा मिसळत आहे आणि प्रदूषण विरळ होत आहे.`,
+  s3: m => `मिश्रण उंची ${m} मी आहे: थर वर जात आहे आणि हवा स्वच्छ होऊ शकते.`, calm: 'वारा मंद आहे, त्यामुळे धूर जागेवरच राहतो.' },
+};
+const LOC = { en: 'en-IN', hi: 'hi-IN', mr: 'mr-IN' };
+const QP = new URLSearchParams(location.search);
+let lang = T[QP.get('lang')] ? QP.get('lang') : (T[store.get('saans-lang')] ? store.get('saans-lang') : 'en');
+const t = k => T[lang][k];
+const num = v => Math.round(v).toLocaleString(LOC[lang]);
+
+if (!S || !S.pop || !window.THREE) { $('#fail').style.display = 'grid'; return; }
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas: $('#gl'), antialias: true }); } catch (e) { $('#fail').style.display = 'grid'; return; }
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+
+/* ---------- data ---------- */
+const ST = S.stations, IDS = ST.map(s => String(s.id)), NH = S.forecast.hours.length;
+const FV = IDS.map(id => S.forecast.values[id]);
+const HOURS = S.forecast.hours.map(h => new Date(h + ':00+05:30'));
+const U = [], V = [], BLH = IDS.map(id => S.met.blh[id]);
+IDS.forEach((id, k) => { U[k] = []; V[k] = []; S.met.ws[id].forEach((w, i) => { const d = S.met.wd[id][i] * Math.PI / 180; U[k][i] = -w * Math.sin(d); V[k][i] = -w * Math.cos(d); }); });
+const LAT0 = 19.085, LON0 = 72.885, KX = 111.32 * Math.cos(LAT0 * Math.PI / 180), KZ = 110.6;
+const PX = lon => (lon - LON0) * KX, PZ = lat => -(lat - LAT0) * KZ;
+const SP = ST.map(s => [PX(s.lon), PZ(s.lat)]);
+const wts = (x, z) => { const w = SP.map(p => 1 / Math.max(0.25, (x - p[0]) ** 2 + (z - p[1]) ** 2)); const s = w[0] + w[1] + w[2] + w[3]; return w.map(v => v / s); };
+const at = (arr, th) => { const i = Math.min(NH - 1, Math.floor(th)), j = Math.min(NH - 1, i + 1), f = th - i; return arr[i] * (1 - f) + arr[j] * f; };
+const P = S.pop, NC = P.lat.length, CX = P.lon.map(PX), CZ = P.lat.map(PZ), CW = CX.map((x, i) => wts(x, CZ[i]));
+const pinName = Object.fromEntries(S.pincodes.features.map(f => [f.properties.pincode, f.properties.name]));
+const QB = [30, 60, 90, 120, 250], QC = ['#2e9e44', '#8fbf3a', '#e3b916', '#ef8a24', '#d6392e', '#8e1b2b'];
+const ANCH = [[15, QC[0]], [45, QC[1]], [75, QC[2]], [105, QC[3]], [185, QC[4]], [300, QC[5]]].map(([v, c]) => [v, new THREE.Color(c)]);
+const qIdx = v => { const i = QB.findIndex(b => v <= b); return i < 0 ? 5 : i; };
+const tmpC = new THREE.Color();
+function pmColor(v, out) { out = out || tmpC;
+  if (v <= ANCH[0][0]) return out.copy(ANCH[0][1]);
+  for (let i = 1; i < ANCH.length; i++) if (v <= ANCH[i][0]) return out.copy(ANCH[i - 1][1]).lerp(ANCH[i][1], (v - ANCH[i - 1][0]) / (ANCH[i][0] - ANCH[i - 1][0]));
+  return out.copy(ANCH[5][1]); }
+
+/* ---------- scene ---------- */
+const scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x0b1226, 0.008);
+const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 400);
+camera.position.set(-24, 25, 39);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = 1.5; controls.minDistance = 1.2; controls.maxDistance = 110;
+controls.autoRotateSpeed = 0.55; controls.target.set(0, 0, 4);
+const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8f9a, 0.9); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 0.7); scene.add(sun);
+
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshLambertMaterial({ color: 0x1b3a5c }));
+sea.rotation.x = -Math.PI / 2; sea.position.y = -0.02; scene.add(sea);
+// land = pincode polygons
+const lands = [];
+const shapesOf = g => (g.type === 'Polygon' ? [g.coordinates] : g.coordinates).map(rings => {
+  const sh = new THREE.Shape(rings[0].map(c => new THREE.Vector2(PX(c[0]), -PZ(c[1]))));
+  rings.slice(1).forEach(r => sh.holes.push(new THREE.Path(r.map(c => new THREE.Vector2(PX(c[0]), -PZ(c[1])))))); return sh; });
+S.pincodes.features.forEach(f => { const g = new THREE.ExtrudeGeometry(shapesOf(f.geometry), { depth: 0.12, bevelEnabled: false }); g.rotateX(-Math.PI / 2); g.computeBoundingBox(); const c = g.boundingBox.getCenter(new THREE.Vector3());
+  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: 0x777777 })); scene.add(m); lands.push({ m, w: wts(c.x, c.z) }); });
+// dumping grounds
+const dumpGroup = new THREE.Group(); scene.add(dumpGroup); const dumpLabels = [];
+(S.landfills ? S.landfills.features : []).forEach(f => { const g = new THREE.ShapeGeometry(shapesOf(f.geometry)); g.rotateX(-Math.PI / 2);
+  const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0x8a5a2b })); m.position.y = 0.16; dumpGroup.add(m);
+  if (f.properties.name && f.properties.area_ha > 10) { g.computeBoundingBox(); const c = g.boundingBox.getCenter(new THREE.Vector3()); dumpLabels.push({ pos: new THREE.Vector3(c.x, 0.5, c.z), text: f.properties.name, cls: 'lbl dump', grp: 'dump' }); } });
+// towers
+const box = new THREE.BoxGeometry(0.64, 1, 0.68); box.translate(0, 0.5, 0);
+const towers = new THREE.InstancedMesh(box, new THREE.MeshLambertMaterial({ color: 0xffffff }), NC); scene.add(towers);
+// real buildings (3D-GloBFP): oriented boxes, true footprint area and height
+let bld = null, BN = 0, BWt = null, BSh = null;
+if (window.SAANS_B) { const bin = atob(SAANS_B.d), b = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+  BN = SAANS_B.n; const ub = new THREE.BoxGeometry(1, 1, 1); ub.translate(0, 0.5, 0);
+  bld = new THREE.InstancedMesh(ub, new THREE.MeshLambertMaterial({ color: 0xffffff }), BN); BWt = new Float32Array(BN * 4); BSh = new Float32Array(BN);
+  const q = new THREE.Quaternion(), yAx = new THREE.Vector3(0, 1, 0), pos = new THREE.Vector3(), sc = new THREE.Vector3(), m4 = new THREE.Matrix4();
+  for (let i = 0, o = 0; i < BN; i++, o += 8) { const x = (b[o] | b[o + 1] << 8) / 65535 * 28 - 14, z = -((b[o + 2] | b[o + 3] << 8) / 65535 * 48 - 24);
+    q.setFromAxisAngle(yAx, b[o + 6] / 255 * Math.PI); pos.set(x, 0.12, z); sc.set(b[o + 4] * 0.002, b[o + 7] / 1000 * VEX, b[o + 5] * 0.002);
+    bld.setMatrixAt(i, m4.compose(pos, q, sc)); const w = wts(x, z); BWt.set(w, i * 4); BSh[i] = 0.8 + 0.2 * ((i * 2654435761 >>> 0) % 1000) / 1000; }
+  bld.setColorAt(0, new THREE.Color(1, 1, 1)); bld.frustumCulled = false; scene.add(bld); }
+function pmRGB(v, arr, o, s) { let i = 1; while (i < 5 && v > ANCH[i][0]) i++; const a = ANCH[i - 1], c = ANCH[i], f = Math.min(1, Math.max(0, (v - a[0]) / (c[0] - a[0])));
+  arr[o] = (a[1].r + (c[1].r - a[1].r) * f) * s; arr[o + 1] = (a[1].g + (c[1].g - a[1].g) * f) * s; arr[o + 2] = (a[1].b + (c[1].b - a[1].b) * f) * s; }
+let bldT = -9;
+const maxOf = a => a.reduce((m, v) => Math.max(m, v), 1);
+const METRIC = { pop: P.pop, kids: P.kids, eld: P.eld }; let metric = bld ? 'bld' : 'pop';
+const hNow = new Float32Array(NC).fill(0.02), hGoal = new Float32Array(NC); let firstMetric = true;
+function legendTxt() { $('#legTxt').textContent = metric === 'bld' ? t('legB')(BN.toLocaleString(LOC[lang])) : t('legH'); }
+function setMetric(m) { if (m === 'bld' && !bld) m = 'pop'; metric = m; towers.visible = m !== 'bld'; if (bld) bld.visible = m === 'bld'; legendTxt();
+  document.querySelectorAll('#metric button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === m)); if (m === 'bld') return;
+  const a = METRIC[m], mx = maxOf(a); for (let i = 0; i < NC; i++) hGoal[i] = Math.max(0.04, a[i] / mx * 4.2);
+  if (firstMetric) { for (let i = 0; i < NC; i++) hNow[i] = hGoal[i] * 0.35; firstMetric = false; }
+  document.querySelectorAll('#metric button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === m)); }
+const M4 = new THREE.Matrix4();
+setMetric(metric);
+for (let i = 0; i < NC; i++) towers.setColorAt(i, tmpC.set(0x888888));
+// parks
+const cone = new THREE.CylinderGeometry(0.06, 0.06, 0.012, 12); cone.translate(0, 0.128, 0);
+const parks = new THREE.InstancedMesh(cone, new THREE.MeshLambertMaterial({ color: 0xffffff }), S.parks.length); scene.add(parks);
+S.parks.forEach((p, i) => { const s = p[1] === 'miyawaki' ? 1.8 : 1; M4.makeScale(s, 1, s).setPosition(PX(p[4]), 0, PZ(p[3])); parks.setMatrixAt(i, M4); parks.setColorAt(i, tmpC.set(p[1] === 'miyawaki' ? 0x0c5a2a : 0x1f7a3c)); });
+// stations: beam + pulsing ring
+const rings = [], stLabels = [];
+ST.forEach((s, k) => { const [x, z] = SP[k];
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 3, 8), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 })); beam.position.set(x, 1.5, z); scene.add(beam);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.34, 0.42, 40), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, side: THREE.DoubleSide, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.set(x, 0.22, z); scene.add(ring); rings.push(ring);
+  stLabels.push({ pos: new THREE.Vector3(x, 3.1, z), k, cls: 'lbl' }); });
+// mixing-height lid
+const lid = new THREE.Mesh(new THREE.PlaneGeometry(30, 50), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.08, side: THREE.DoubleSide, depthWrite: false }));
+lid.rotation.x = -Math.PI / 2; scene.add(lid);
+const lidEdge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(30, 50)), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45 })); lidEdge.rotation.x = -Math.PI / 2; scene.add(lidEdge);
+// wind particles as streaks
+const NP = 2600, pp = new Float32Array(NP * 6), pc = new Float32Array(NP * 6), pst = [];
+for (let i = 0; i < NP; i++) pst.push({ x: 0, y: 0, z: 0, f: Math.random(), life: 0, w: [0.25, 0.25, 0.25, 0.25] });
+const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(pp, 3)); pg.setAttribute('color', new THREE.BufferAttribute(pc, 3));
+const streaks = new THREE.LineSegments(pg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.6, depthWrite: false })); streaks.frustumCulled = false; scene.add(streaks);
+let lidY = 4;
+function respawn(p) { p.x = (Math.random() - 0.5) * 30; p.z = (Math.random() - 0.5) * 50; p.life = 2 + Math.random() * 4; p.w = wts(p.x, p.z); }
+pst.forEach(respawn);
+
+/* ---------- labels ---------- */
+const labelBox = $('#labels'), allLabels = [...stLabels, ...dumpLabels];
+allLabels.forEach(l => { l.el = document.createElement('div'); l.el.className = l.cls; labelBox.append(l.el); if (l.text) l.el.textContent = l.text; });
+const v3 = new THREE.Vector3();
+function placeLabels() { const w = innerWidth, h = innerHeight;
+  allLabels.forEach(l => { v3.copy(l.pos).project(camera); const vis = v3.z < 1 && (l.grp !== 'dump' || $('#cDump').checked);
+    l.el.style.display = vis ? 'block' : 'none'; if (vis) { l.el.style.left = ((v3.x + 1) / 2 * w) + 'px'; l.el.style.top = ((1 - v3.y) / 2 * h) + 'px'; } }); }
+
+/* ---------- sun ---------- */
+function sunPos(d) { const doy = Math.floor((d - new Date(Date.UTC(d.getUTCFullYear(), 0, 0))) / 864e5);
+  const dec = -23.44 * Math.cos(2 * Math.PI * (doy + 10) / 365) * Math.PI / 180, B = 2 * Math.PI * (doy - 81) / 364;
+  const eot = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+  const solar = (d.getUTCHours() * 60 + d.getUTCMinutes() + LON0 * 4 + eot) / 60, H = (solar - 12) * 15 * Math.PI / 180, lat = LAT0 * Math.PI / 180;
+  const el = Math.asin(Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(H));
+  const az = Math.atan2(-Math.sin(H), Math.tan(dec) * Math.cos(lat) - Math.sin(lat) * Math.cos(H));   // from north, clockwise
+  return { el, az }; }
+const NIGHT = new THREE.Color(0x0b1226), DAY = new THREE.Color(0x8db4d8), DUSK = new THREE.Color(0xe0905a), sky = new THREE.Color();
+const SEA_N = new THREE.Color(0x10233d), SEA_D = new THREE.Color(0x3f6f9c), LAND_N = new THREE.Color(0x3a3d45), LAND_D = new THREE.Color(0x8a8b86);
+
+/* ---------- state & UI ---------- */
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let tH = Math.max(0, HOURS.findIndex(h => h.getUTCHours() === 0 && h.getUTCMinutes() === 30)), playing = !reduce, touring = !reduce, tourT = 0, tourI = 0;
+if (QP.get('h')) tH = Math.min(NH - 1, +QP.get('h')); if (QP.get('still')) { playing = false; touring = false; hNow.set(hGoal); }
+const SPEED = 1.3;   // forecast hours per second
+const slider = $('#time'); if (QP.get('focus')) { const p = SP[+QP.get('focus')], dd = +(QP.get('d') || 6); controls.target.set(p[0], 0, p[1]); camera.position.set(p[0] - dd * 0.5, dd * 0.45, p[1] + dd * 0.75); }
+slider.max = NH - 1; slider.value = Math.round(tH);
+slider.oninput = () => { tH = +slider.value; playing = false; syncBtns(); };
+$('#play').onclick = () => { playing = !playing; syncBtns(); };
+$('#tour').onclick = () => { touring = !touring; if (touring) playing = true; syncBtns(); };
+function syncBtns() { $('#play').textContent = playing ? '❚❚' : '▶'; $('#tour').classList.toggle('on', touring); controls.autoRotate = touring; }
+renderer.domElement.addEventListener('pointerdown', () => { if (touring) { touring = false; syncBtns(); } });
+renderer.domElement.addEventListener('wheel', () => { if (touring) { touring = false; syncBtns(); } }, { passive: true });
+document.querySelectorAll('#metric button').forEach(b => b.onclick = () => setMetric(b.dataset.m));
+$('#cWind').onchange = e => streaks.visible = e.target.checked;
+$('#cLid').onchange = e => { lid.visible = lidEdge.visible = e.target.checked; };
+$('#cParks').onchange = e => parks.visible = e.target.checked;
+$('#cDump').onchange = e => dumpGroup.visible = e.target.checked;
+function applyLang() { document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i]').forEach(e => e.textContent = t(e.dataset.i));
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === lang));
+  $('#top a').href = 'index.html?lang=' + lang;
+  const ticks = $('#grad .ticks'); ticks.textContent = ''; t('q').forEach(n => { const s = document.createElement('span'); s.textContent = n; ticks.append(s); }); lastHud = -1; legendTxt(); }
+document.querySelectorAll('[data-lang]').forEach(b => b.onclick = () => { lang = b.dataset.lang; store.set('saans-lang', lang); applyLang(); });
+$('#grad .bar').style.background = `linear-gradient(90deg, ${QC.join(',')})`;
+
+/* ---------- hover ---------- */
+const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.12);
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(); let hover = null, mx = 0, my = 0;
+renderer.domElement.addEventListener('pointermove', e => { mx = e.clientX; my = e.clientY; mouse.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(mouse, camera);
+  let hit = null;
+  if (metric === 'bld') { const pt = ray.ray.intersectPlane(ground, new THREE.Vector3()); if (pt) { let bi = -1, bd = 0.9; for (let i = 0; i < NC; i++) { const dd = Math.hypot(CX[i] - pt.x, CZ[i] - pt.z); if (dd < bd) { bd = dd; bi = i; } } if (bi >= 0) hit = { object: towers, instanceId: bi }; } }
+  else hit = ray.intersectObjects([towers, parks])[0];
+  hover = hit ? { obj: hit.object, i: hit.instanceId } : null; if (!hover) $('#tip').style.display = 'none'; });
+renderer.domElement.addEventListener('pointerleave', () => { hover = null; $('#tip').style.display = 'none'; });
+const cellPM = new Float32Array(NC);
+function line(tip, a, b) { const d = document.createElement('div'); const s = document.createElement('span'); s.textContent = a + ' '; const bb = document.createElement('b'); bb.textContent = b; d.append(s, bb); tip.append(d); }
+function showTip() { const tip = $('#tip'); if (!hover) return; tip.textContent = ''; const h = document.createElement('div'); h.className = 't';
+  if (hover.obj === towers) { const i = hover.i; h.textContent = `${P.pin[i]} · ${pinName[P.pin[i]] || ''}`; tip.append(h);
+    line(tip, 'PM2.5', `${num(cellPM[i])} µg/m³ · ${t('q')[qIdx(cellPM[i])]}`); line(tip, t('people'), num(P.pop[i])); line(tip, t('kids'), num(P.kids[i])); line(tip, t('eld'), num(P.eld[i])); }
+  else { const p = S.parks[hover.i]; h.textContent = p[0] || t(p[1]); tip.append(h); line(tip, t(p[1]), p[2] ? '· ' + p[2] : ''); }
+  tip.style.display = 'block'; tip.style.left = Math.min(innerWidth - tip.offsetWidth - 8, mx + 14) + 'px'; tip.style.top = Math.max(8, my - tip.offsetHeight - 10) + 'px'; }
+
+/* ---------- frame ---------- */
+const TOUR = [{ t: [0, 0, 4], d: 50 }, ...SP.map(p => ({ t: [p[0], 0, p[1]], d: 6.5 }))];
+const goal = new THREE.Vector3(), off = new THREE.Vector3(); let lastHud = -1, last = performance.now(), heightsDirty = true;
+function frame(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (playing) { tH += dt * SPEED; if (tH >= NH - 1) tH = 0; slider.value = Math.round(tH); }
+  const vals = FV.map(a => at(a, tH)), us = U.map(a => at(a, tH)), vs = V.map(a => at(a, tH)), blh = BLH.map(a => at(a, tH)).reduce((a, b) => a + b, 0) / 4;
+  const cityPM = vals.reduce((a, b) => a + b, 0) / 4, cu = us.reduce((a, b) => a + b, 0) / 4, cv = vs.reduce((a, b) => a + b, 0) / 4;
+  // sky, light, fog
+  const d = new Date(HOURS[0].getTime() + tH * 3600e3), sp = sunPos(d), day = THREE.MathUtils.smoothstep(sp.el, -0.1, 0.2), warm = Math.max(0, 1 - Math.abs(sp.el) / 0.17) * 0.5;
+  sky.copy(NIGHT).lerp(DAY, day).lerp(DUSK, warm); scene.background = sky; scene.fog.color.copy(sky); scene.fog.density = 0.004 + cityPM / 11000;
+  hemi.intensity = 0.72 - 0.12 * day; sun.intensity = 0.2 + 0.3 * day;
+  const e = Math.max(0.25, sp.el); sun.position.set(Math.sin(sp.az) * Math.cos(e) * 50, Math.sin(e) * 50, -Math.cos(sp.az) * Math.cos(e) * 50);
+  sea.material.color.copy(SEA_N).lerp(SEA_D, day);
+  // towers
+  let moving = false;
+  for (let i = 0; i < NC; i++) { const w = CW[i], pm = w[0] * vals[0] + w[1] * vals[1] + w[2] * vals[2] + w[3] * vals[3]; cellPM[i] = pm; towers.setColorAt(i, pmColor(pm));
+    const g = hGoal[i], h = hNow[i]; if (Math.abs(g - h) > 0.002) { hNow[i] = h + (g - h) * Math.min(1, dt * 3.5); moving = true; } }
+  towers.instanceColor.needsUpdate = true;
+  if (bld && bld.visible && Math.abs(tH - bldT) > 0.12) { bldT = tH; const arr = bld.instanceColor.array;
+    const nb = 0.5 + 0.5 * day, tint = 0.26, c3 = [0, 0, 0];
+    for (let i = 0, o = 0; i < BN; i++, o += 4) { pmRGB(BWt[o] * vals[0] + BWt[o + 1] * vals[1] + BWt[o + 2] * vals[2] + BWt[o + 3] * vals[3], c3, 0, 1);
+      const s = BSh[i] * nb, lit = day < 0.5 && (i % 7 < 2) ? (1 - day * 2) * 0.55 : 0, k = i * 3;
+      arr[k] = (0.80 * (1 - tint) + c3[0] * tint) * s + lit; arr[k + 1] = (0.78 * (1 - tint) + c3[1] * tint) * s + lit * 0.8; arr[k + 2] = (0.74 * (1 - tint) + c3[2] * tint) * s + lit * 0.42; }
+    bld.instanceColor.needsUpdate = true;
+    lands.forEach(l => { const w = l.w; pmColor(w[0] * vals[0] + w[1] * vals[1] + w[2] * vals[2] + w[3] * vals[3], l.m.material.color).multiplyScalar(0.55 + 0.3 * day); }); }
+  if (!(bld && bld.visible)) lands.forEach(l => l.m.material.color.copy(LAND_N).lerp(LAND_D, day));
+  if (moving || heightsDirty) { for (let i = 0; i < NC; i++) { M4.makeScale(1, hNow[i], 1).setPosition(CX[i], 0.12, CZ[i]); towers.setMatrixAt(i, M4); } towers.instanceMatrix.needsUpdate = true; heightsDirty = false; }
+  // lid
+  const lidGoal = 1.2 + Math.min(blh, 2200) / 2200 * 9; lidY += (lidGoal - lidY) * Math.min(1, dt * 2.5); lid.position.y = lidEdge.position.y = lidY;
+  // wind streaks: count follows pollution, motion follows the wind forecast
+  if (streaks.visible) { const n = Math.round(NP * Math.min(1, Math.max(0.22, cityPM / 110))); pg.setDrawRange(0, n * 2);
+    for (let i = 0; i < n; i++) { const p = pst[i], w = p.w, u = w[0] * us[0] + w[1] * us[1] + w[2] * us[2] + w[3] * us[3], v = w[0] * vs[0] + w[1] * vs[1] + w[2] * vs[2] + w[3] * vs[3];
+      const vx = u * 0.13, vz = -v * 0.13; p.x += vx * dt; p.z += vz * dt; p.life -= dt; p.y = 0.2 + p.f * (lidY - 0.35);
+      if (p.life < 0 || Math.abs(p.x) > 15 || Math.abs(p.z) > 25) { respawn(p); }
+      const k = i * 6, tl = 0.55; pp[k] = p.x; pp[k + 1] = p.y; pp[k + 2] = p.z; pp[k + 3] = p.x - vx * tl; pp[k + 4] = p.y; pp[k + 5] = p.z - vz * tl;
+      const c = pmColor(w[0] * vals[0] + w[1] * vals[1] + w[2] * vals[2] + w[3] * vals[3]); pc[k] = c.r; pc[k + 1] = c.g; pc[k + 2] = c.b; pc[k + 3] = c.r * 0.5 + sky.r * 0.5; pc[k + 4] = c.g * 0.5 + sky.g * 0.5; pc[k + 5] = c.b * 0.5 + sky.b * 0.5; }
+    pg.attributes.position.needsUpdate = true; pg.attributes.color.needsUpdate = true; }
+  // stations
+  rings.forEach((r, k) => { const s = 1 + ((now / 1400 + k * 0.25) % 1) * 2.2; r.scale.set(s, s, s); r.material.opacity = 0.85 * (1 - (s - 1) / 2.2); r.material.color.copy(pmColor(vals[k])); });
+  // auto tour
+  if (touring) { tourT += dt; if (tourT > 9) { tourT = 0; tourI = (tourI + 1) % TOUR.length; }
+    const g = TOUR[tourI]; goal.set(g.t[0], g.t[1], g.t[2]); controls.target.lerp(goal, Math.min(1, dt * 1.2));
+    off.copy(camera.position).sub(controls.target); const len = off.length(); off.multiplyScalar((len + (g.d - len) * Math.min(1, dt * 1.2)) / len); camera.position.copy(controls.target).add(off); }
+  controls.update();
+  // HUD (once per forecast hour, labels every frame)
+  const hi = Math.round(tH * 4);
+  if (hi !== lastHud) { lastHud = hi;
+    $('#pmNow').textContent = num(cityPM); const b = $('#band'); b.textContent = ''; const dot = document.createElement('i'); dot.style.background = '#' + pmColor(cityPM).getHexString(); b.append(dot, t('q')[qIdx(cityPM)]);
+    const ws = Math.hypot(cu, cv), from = (Math.atan2(-cu, -cv) * 180 / Math.PI + 360) % 360;
+    $('#windTxt').textContent = `${num(ws)} km/h ${t('from')} ${t('dirs')[Math.round(from / 45) % 8]}`; $('#arrow').style.transform = `rotate(${from + 180}deg)`;
+    $('#lidTxt').textContent = `${num(Math.round(blh / 10) * 10)} m`;
+    $('#clock').textContent = d.toLocaleString(LOC[lang], { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', hour12: true, timeZone: 'Asia/Kolkata' });
+    const m = Math.round(blh / 10) * 10; $('#story').textContent = (blh < 300 ? t('s1')(num(m)) : blh < 1000 ? t('s2')(num(m)) : t('s3')(num(m))) + (ws < 5 ? ' ' + t('calm') : '');
+    stLabels.forEach(l => { l.el.textContent = ST[l.k].short + ' '; const sm = document.createElement('small'); sm.textContent = num(vals[l.k]) + ' µg/m³'; l.el.append(sm); }); }
+  placeLabels(); if (hover) showTip();
+  renderer.render(scene, camera); requestAnimationFrame(frame); }
+function resize() { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize(); applyLang(); syncBtns(); document.body.dataset.ready = '1'; if (QP.get('debug')) setTimeout(() => { document.title = 'W' + document.documentElement.scrollWidth; }, 2500); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
