@@ -288,7 +288,7 @@ const T = {
   tileNote: d => `average on ${d}`, cityMean: 'City mean', forecast: 'Forecast', observed: 'Observed', range: 'Likely range',
   placeSub: 'Last 3 days observed and the next 2–3 days forecast (µg/m³)', station: 'Monitoring station', here: 'Selected point',
   best: (d, a, b, v) => [`${d} — cleanest:`, `${a}–${b}`, `≈ ${v} µg/m³`], worst: (a, b, v) => [`most polluted:`, `${a}–${b}`, `≈ ${v} µg/m³`],
-  near: 'Nearest parks', dir: 'Directions', km: 'km', people: 'People', kids: 'Children under 5', eld: 'Adults 65+', unhealthy: 'in Moderate or worse air',
+  near: 'Nearest parks', dir: 'Directions', km: 'km', people: 'People', kids: 'Children under 5', eld: 'Adults 65+', unhealthy: 'face 2+ hours of Moderate or worse air', lastRead: v => `last reading ${v}`,
   pin: 'Pincode', area: 'Area', pm: 'PM2.5', exposedKids: 'Children <5', exposedEld: 'Adults 65+',
   dwNight: 'firework night', hrs: 'hours from firework night', y2025: 'Diwali 2025 (20 Oct)', y2026: 'Diwali 2026 (8 Nov)',
   persistence: 'Repeat last week', cams: 'CAMS forecast (bias-corrected)', model: 'Saans model',
@@ -318,7 +318,7 @@ const T = {
   tileNote: d => `${d} का औसत`, cityMean: 'शहर औसत', forecast: 'पूर्वानुमान', observed: 'मापा गया', range: 'संभावित दायरा',
   placeSub: 'पिछले 3 दिन मापा गया और अगले 2–3 दिन का पूर्वानुमान (µg/m³)', station: 'निगरानी स्टेशन', here: 'चुनी गई जगह',
   best: (d, a, b, v) => [`${d} — सबसे साफ़:`, `${a}–${b}`, `≈ ${v} µg/m³`], worst: (a, b, v) => [`सबसे प्रदूषित:`, `${a}–${b}`, `≈ ${v} µg/m³`],
-  near: 'नज़दीकी उद्यान', dir: 'रास्ता देखें', km: 'किमी', people: 'लोग', kids: '5 साल से छोटे बच्चे', eld: '65+ उम्र के लोग', unhealthy: 'मध्यम या उससे खराब हवा में',
+  near: 'नज़दीकी उद्यान', dir: 'रास्ता देखें', km: 'किमी', people: 'लोग', kids: '5 साल से छोटे बच्चे', eld: '65+ उम्र के लोग', unhealthy: '2+ घंटे मध्यम या उससे खराब हवा में', lastRead: v => `आख़िरी माप ${v}`,
   pin: 'पिनकोड', area: 'क्षेत्र', pm: 'PM2.5', exposedKids: 'बच्चे <5', exposedEld: '65+',
   dwNight: 'आतिशबाज़ी की रात', hrs: 'आतिशबाज़ी की रात से घंटे', y2025: 'दिवाली 2025 (20 अक्टू.)', y2026: 'दिवाली 2026 (8 नवं.)',
   persistence: 'पिछला हफ़्ता दोहराएँ', cams: 'CAMS पूर्वानुमान (सुधारा हुआ)', model: 'Saans मॉडल',
@@ -348,7 +348,7 @@ const T = {
   tileNote: d => `${d} ची सरासरी`, cityMean: 'शहर सरासरी', forecast: 'अंदाज', observed: 'मोजलेले', range: 'संभाव्य मर्यादा',
   placeSub: 'मागील 3 दिवस मोजलेले आणि पुढील 2–3 दिवसांचा अंदाज (µg/m³)', station: 'निरीक्षण स्टेशन', here: 'निवडलेले ठिकाण',
   best: (d, a, b, v) => [`${d} — सर्वात स्वच्छ:`, `${a}–${b}`, `≈ ${v} µg/m³`], worst: (a, b, v) => [`सर्वात प्रदूषित:`, `${a}–${b}`, `≈ ${v} µg/m³`],
-  near: 'जवळची उद्याने', dir: 'मार्ग पाहा', km: 'किमी', people: 'लोक', kids: '5 वर्षांखालील मुले', eld: '65+ वयाचे लोक', unhealthy: 'मध्यम किंवा त्याहून वाईट हवेत',
+  near: 'जवळची उद्याने', dir: 'मार्ग पाहा', km: 'किमी', people: 'लोक', kids: '5 वर्षांखालील मुले', eld: '65+ वयाचे लोक', unhealthy: '2+ तास मध्यम किंवा त्याहून वाईट हवेत', lastRead: v => `शेवटचे मोजमाप ${v}`,
   pin: 'पिनकोड', area: 'भाग', pm: 'PM2.5', exposedKids: 'मुले <5', exposedEld: '65+',
   dwNight: 'फटाक्यांची रात्र', hrs: 'फटाक्यांच्या रात्रीपासून तास', y2025: 'दिवाळी 2025 (20 ऑक्टो.)', y2026: 'दिवाळी 2026 (8 नोव्हें.)',
   persistence: 'मागील आठवडा पुन्हा', cams: 'CAMS अंदाज (दुरुस्त केलेला)', model: 'Saans मॉडेल',
@@ -521,7 +521,7 @@ function renderPlace() {
   const yMax = niceMax(Math.max(60, fmax * 1.15, Math.min(omax, fmax * 1.6)));
   lineChart($('#placeChart'), { yMax,
     series: [
-      { name: t('observed'), color: css('--ink-2'), x: obsH, y: obs },
+      { name: t('observed'), color: css('--ink-2'), x: obsH, y: obs, lastLabel: v => t('lastRead')(r0(v)) },
       { name: t('forecast'), color: css('--s1'), x: FH, y: fc, band: [fc.map(v => v == null ? null : v * S.forecast.low), fc.map(v => v == null ? null : v * S.forecast.high)] },
     ], legend: $('#placeLegend'), bandName: t('range'), qBands: true, height: 230 });
   // best / worst 2-hour windows between 6 am and 10 pm for each full day
@@ -591,6 +591,16 @@ function lineChart(box, o) {
     let d = '', pen = false;
     s.y.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(+s.x[i]).toFixed(1)},${Y(v).toFixed(1)}`; pen = true; });
     svg.append(svgEl('path', { d, fill: 'none', stroke: s.color, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'clip-path': `url(#${cid})` }));
+    // values above the chart: mark each clipped peak with ▲ and its value at the top edge
+    const peaks = []; let run = null; const flush = () => { if (run) peaks.push({ x: X(+s.x[run.i]), v: run.v }); run = null; };
+    s.y.forEach((v, i) => { if (v != null && v > yMax) { if (!run || v > run.v) run = { i, v }; } else flush(); }); flush();   // highest point of each clipped run
+    const placed = []; peaks.sort((a, b) => b.v - a.v).forEach(p => { if (placed.every(q => Math.abs(q - p.x) > 38)) { placed.push(p.x);   // biggest peaks win the label space
+      const tx = svgEl('text', { x: p.x, y: m.t + 9, 'text-anchor': 'middle', style: `fill:${css('--ink')};font-weight:600` }); tx.textContent = '▲' + r0(p.v); svg.append(tx); } });
+    // label the last observed reading so the jump to the forecast is explained
+    if (s.lastLabel) { let j = s.y.length - 1; while (j >= 0 && s.y[j] == null) j--;
+      if (j >= 0) { const v = s.y[j], x = X(+s.x[j]), y = Math.max(m.t + 22, Y(Math.min(v, yMax)) - 6);
+        svg.append(svgEl('circle', { cx: x, cy: Y(Math.min(v, yMax)), r: 4, fill: s.color, stroke: css('--surface'), 'stroke-width': 2 }));
+        const tx = svgEl('text', { x: x - 6, y, 'text-anchor': 'end', style: `fill:${css('--ink')};font-weight:600` }); tx.textContent = s.lastLabel(v); svg.append(tx); } }
   });
   const cross = svgEl('line', { y1: m.t, y2: H - m.b, stroke: css('--ink-2'), 'stroke-width': 1, opacity: 0 }); svg.append(cross);
   const dots = o.series.map(s => { const c = svgEl('circle', { r: 4, fill: s.color, stroke: css('--surface'), 'stroke-width': 2, opacity: 0 }); svg.append(c); return c; });
@@ -628,7 +638,10 @@ function exposure(d) {
   if (!P) return { bins, cellPM: [] };
   const cellPM = P.lat.map((_, i) => idw(cellW[i], daily));
   cellPM.forEach((v, i) => { const q = Math.max(0, qIdx(v)); bins[q].pop += P.pop[i]; bins[q].kids += P.kids[i]; bins[q].eld += P.eld[i]; });
-  return { bins, cellPM };
+  // people facing at least 2 hours of Moderate-or-worse air (hourly forecast > 60 µg/m³) on this day
+  const bad = { pop: 0, kids: 0, eld: 0 }, badHours = P.lat.map((_, i) => idx.filter(h => idw(cellW[i], FV.map(v => v[h])) > 60).length);
+  badHours.forEach((n, i) => { if (n >= 2) { bad.pop += P.pop[i]; bad.kids += P.kids[i]; bad.eld += P.eld[i]; } });
+  return { bins, cellPM, bad, badHours };
 }
 function exposureByPin() {
   if (!P) return {};
@@ -640,7 +653,7 @@ function exposureByPin() {
 function renderExposure() {
   const seg = $('#daySeg'); seg.textContent = '';
   days.forEach(d => { const b = el('button', { 'aria-pressed': d === selDay }, fmtDay(parseH(d + 'T12:00'))); b.onclick = () => { selDay = d; renderAll(); }; seg.append(b); });
-  const { bins } = exposure(selDay), tot = bins.reduce((a, b) => a + b.pop, 0) || 1;
+  const { bins, bad } = exposure(selDay), tot = bins.reduce((a, b) => a + b.pop, 0) || 1;
   const bar = $('#segbar'); bar.textContent = '';
   bar.setAttribute('aria-label', bins.map((b, i) => `${t('q')[i]} ${Math.round(100 * b.pop / tot)}%`).join(', '));
   bins.forEach((b, i) => { if (!b.pop) return; const share = b.pop / tot, d = el('div');
@@ -648,7 +661,6 @@ function renderExposure() {
     d.title = `${t('q')[i]}: ${r0(b.pop)} ${t('people').toLowerCase()} (${Math.round(share * 100)}%)`;
     const lab = `${t('q')[i]} ${Math.round(share * 100)}%`, room = share * (bar.clientWidth || 400) - 14;
     if (lab.length * 7.2 < room) d.textContent = lab; bar.append(d); });
-  const bad = bins.slice(2).reduce((a, b) => ({ pop: a.pop + b.pop, kids: a.kids + b.kids, eld: a.eld + b.eld }), { pop: 0, kids: 0, eld: 0 });
   const k = $('#kpis'); k.textContent = '';
   [[t('people'), bad.pop], [t('kids'), bad.kids], [t('eld'), bad.eld]].forEach(([lab, v]) => {
     const c = el('div'); c.append(el('div', { class: 'label' }, lab), el('div', { class: 'val' }, compact(v)), el('div', { class: 'muted' }, t('unhealthy'))); k.append(c); });

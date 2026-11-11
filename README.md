@@ -13,7 +13,7 @@
 |---|---|
 | **Hour-by-hour forecast map** | PM2.5 for the next 2–3 days across Mumbai, coloured by the official CPCB air-quality bands, with a time slider and play button. |
 | **Click anywhere** | A local forecast with its likely range, the **cleanest and most polluted 2-hour windows** each day, the CPCB health advice for that level, and the **nearest parks and Miyawaki gardens**. |
-| **Who is breathing it?** | Combines the forecast with WorldPop 2026 population estimates to count the **people, children under 5 and adults over 65** living in each air-quality band, and ranks the most-exposed pincode areas. |
+| **Who is breathing it?** | Combines the forecast with WorldPop 2026 population estimates to count the **people, children under 5 and adults over 65** in each air-quality band and how many face **2+ hours of Moderate-or-worse air**, and ranks the most-exposed pincode areas. |
 | **3D living city** | Mumbai rebuilt from **110,000 real building footprints with heights** (3D-GloBFP). Time plays by itself, wind-driven haze streams across the city, the **mixing-height lid** rises and falls with the forecast, and the day/night sky follows the real sun. Auto-tours each station. Switch towers to people, children or 65+. |
 | **Pollution context** | Dumping grounds (Deonar, Kanjur, Mulund, Gorai…), BEST bus stops and pincode boundaries as map layers. |
 | **After Diwali** | How quickly the air cleared after the firework nights of 2025 and 2026. |
@@ -24,7 +24,7 @@
 
 * Mumbai's winter air is **4–5× dirtier than its monsoon air** (city mean about 71 µg/m³ in Nov 2025 against 14–18 µg/m³ in Jun–Sep).
 * Pollution is unequal. **Shivaji Nagar, 0.8 km from the Deonar dumping ground, averaged 76 µg/m³ in winter**, while the other three stations averaged 51–54.
-* On **11 Nov 2026** the forecast puts about **570,000 people**, including **38,000 children under 5** and **51,000 adults over 65**, in **Moderate** air (daily mean above 60 µg/m³). These are WorldPop 2026 estimates for the mapped area. WorldPop models about 4 million people there, fewer than census-based estimates, so treat the counts as a lower bound.
+* On **11 Nov 2026** the forecast puts about **3.4 million people**, including **225,000 children under 5** and **304,000 adults over 65**, in **at least 2 hours of Moderate-or-worse air** (hourly PM2.5 above 60 µg/m³; the 7–9 am peak), about 9 such hours each. On 12 Nov it is 2.9 million. These are WorldPop 2026 estimates for the mapped area. WorldPop models about 4 million people there, fewer than census-based estimates, so treat the counts as a lower bound.
 * Most people only see *today's* AQI. A **next-48-hours** forecast with **specific clean hours** turns data into a decision: when to walk, when to take the kids to the park, when to close the windows.
 
 ## How it works
