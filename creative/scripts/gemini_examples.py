@@ -6,7 +6,7 @@ from google.genai import types
 H = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.join(H, '..', '..'); SITE = os.environ.get('SAANS_SITE', os.path.join(H, '..', 'site'))
 key = open(os.path.join(ROOT, 'gemini_key.txt')).read().strip()
 s = open(os.path.join(SITE, 'data.js'), encoding='utf-8').read(); S = json.loads(s[s.index('{'):s.rstrip().rstrip(';').rindex('}') + 1])
-client = genai.Client(api_key=key)
+client = genai.Client(api_key=key, http_options=types.HttpOptions(timeout=60000))   # 60 s per request
 names = [m.name for m in client.models.list() if 'generateContent' in (m.supported_actions or [])
          and 'gemini' in m.name and 'flash' in m.name and not any(x in m.name for x in ('image', 'tts', 'live', 'audio', 'lite', 'exp', 'preview'))]
 def ver(n):
@@ -41,6 +41,6 @@ User question: {q}"""
     if not ans: raise SystemExit('Gemini unavailable for: ' + q)
     print(f'\n[{lang}] {st[sid]["short"]} | {q}\n{ans}')
     out.append(dict(lang=lang, place=st[sid]['short'], q=q, a=ans, model=used.replace('models/', '')))
-meta = dict(model=model.replace('models/', ''), date=datetime.date.today().isoformat(), items=out)
-open(os.path.join(SITE, 'gemini_examples.js'), 'w', encoding='utf-8').write('window.SAANS_GEM = ' + json.dumps(meta, ensure_ascii=False) + ';\n')
+    meta = dict(model=model.replace('models/', ''), date=datetime.date.today().isoformat(), items=out)   # save after each answer
+    open(os.path.join(SITE, 'gemini_examples.js'), 'w', encoding='utf-8').write('window.SAANS_GEM = ' + json.dumps(meta, ensure_ascii=False) + ';\n')
 print('\nwrote gemini_examples.js')
