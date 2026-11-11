@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%232a78d6%27/%3E%3Cpath d=%27M6 19c4-6 7 2 10-3s6-3 10-1M6 24c4-5 7 1 10-3s6-2 10 0%27 stroke=%27white%27 stroke-width=%272.4%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
 <title>Saans · Mumbai Clean-Air Forecast</title>
 <meta name="description" content="48-hour PM2.5 forecast for Mumbai, who is exposed, and the cleanest hours to go outside — in English, Hindi and Marathi.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,6 +53,8 @@ header.top .wrap { display: flex; align-items: center; gap: 12px; height: 56px; 
 .seg { display: inline-flex; border: 1px solid var(--grid); border-radius: 999px; overflow: hidden; background: var(--surface); }
 .seg button { border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 13px; padding: 5px 11px; cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--page); }
+.ghlink { display: inline-flex; align-items: center; justify-content: center; color: var(--ink); text-decoration: none; }
+.ghlink:hover, .iconbtn:hover { border-color: var(--ink-2); }
 .iconbtn { border: 1px solid var(--grid); background: var(--surface); color: var(--ink-2); border-radius: 999px; width: 32px; height: 32px; cursor: pointer; font-size: 15px; }
 section { margin: 28px 0; }
 h1 { font-size: clamp(26px, 4vw, 38px); line-height: 1.15; letter-spacing: -0.02em; margin: 26px 0 6px; }
@@ -155,6 +158,7 @@ main, .card, .grid > * { min-width: 0; }
     <button data-lang="en" aria-pressed="true">EN</button><button data-lang="hi" aria-pressed="false">हिंदी</button><button data-lang="mr" aria-pressed="false">मराठी</button>
   </div>
   <button class="iconbtn" id="theme" title="Toggle dark mode" aria-label="Toggle dark mode">◐</button>
+  <a class="iconbtn ghlink" href="https://github.com/Shubham-Tambei9/saans-mumbai-air" target="_blank" rel="noopener" title="Source code on GitHub" aria-label="Source code on GitHub"><svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
 </div></header>
 
 <main class="wrap">
