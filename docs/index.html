@@ -140,6 +140,10 @@ footer li { margin: 3px 0; }
 main, .card, .grid > * { min-width: 0; }
 .ex { border: 1px solid var(--grid); border-radius: 12px; padding: 12px 14px; margin-top: 10px; background: var(--surface); }
 .ex .q { font-weight: 600; margin-bottom: 6px; } .ex .a { white-space: pre-wrap; color: var(--ink); } .ex .m { margin-top: 6px; }
+.g2s { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 760px) { .g2s { grid-template-columns: minmax(0, 1fr); } }
+.sthead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.sthead h3 { margin: 0; font-size: 16px; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 </style>
 </head>
@@ -190,6 +194,7 @@ main, .card, .grid > * { min-width: 0; }
     <div class="card">
       <h2 id="placeTitle"></h2>
       <p class="muted" id="placeSub" style="margin:0 0 6px"></p>
+      <div class="seg viewSeg" role="group" aria-label="Chart range" style="margin:2px 0 8px"></div>
       <div class="chartlegend" id="placeLegend"></div>
       <div class="chart" id="placeChart"></div>
       <div class="best" id="bestHours"></div>
@@ -205,6 +210,13 @@ main, .card, .grid > * { min-width: 0; }
       <h3 style="font-size:15px;margin:16px 0 4px" data-i="topPin">Most exposed pincode areas</h3>
       <div class="tablewrap"><table id="pinTable"><thead></thead><tbody></tbody></table></div>
     </div>
+  </section>
+
+  <section>
+    <h2 data-i="allH">All 4 stations</h2>
+    <p class="sub" data-i="allSub">Last 3 days measured and the forecast to 12 Nov.</p>
+    <div class="row" style="justify-content:space-between;margin-bottom:8px"><div class="seg viewSeg" role="group" aria-label="Chart range"></div><div class="chartlegend" id="allLegend" style="margin:0"></div></div>
+    <div class="grid g2s" id="allCharts"></div>
   </section>
 
   <section class="grid g2">
@@ -266,7 +278,7 @@ const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { ret
 const T = {
  en: { tagline: 'Mumbai clean-air forecast', h1: "How clean will Mumbai's air be in the next 48 hours?",
   intro: 'Hour-by-hour PM2.5 forecasts for every neighbourhood, who is breathing unhealthy air, and the cleanest hours to step outside.',
-  cityBtn: 'Watch the 3D living city ▸', mapH: 'Forecast map', mapSub: 'Drag the time slider to see how pollution moves through the day. Click anywhere on the map for a local forecast and the best time to go out.',
+  cityBtn: 'Watch the 3D living city ▸', allH: 'All 4 stations', allSub: 'Last 3 days measured and the forecast to 12 Nov. Full range shows every festival peak; each chart has its own scale.', vFull: 'Full range', vZoom: 'Zoom on forecast', details: 'Open details ↑', mapH: 'Forecast map', mapSub: 'Drag the time slider to see how pollution moves through the day. Click anywhere on the map for a local forecast and the best time to go out.',
   lyParks: 'Parks & Miyawaki gardens', lyBus: 'BEST bus stops', lyPin: 'Pincode areas', lyFill: 'Dumping grounds', dump: 'Dumping ground',
   expH: 'Who is breathing it?', expSub: 'People living in each air-quality band on the selected day (WorldPop 2026 estimates, 1 km grid).',
   topPin: 'Most exposed pincode areas', dwH: 'After Diwali: how fast does the air clear?',
@@ -296,7 +308,7 @@ const T = {
   park: 'Park', miyawaki: 'Miyawaki garden', zoo: 'Zoo', stop: 'Bus stop', depot: 'Bus depot', pmAt: 'PM2.5 at this hour' },
  hi: { tagline: 'मुंबई स्वच्छ-हवा पूर्वानुमान', h1: 'अगले 48 घंटों में मुंबई की हवा कितनी साफ़ होगी?',
   intro: 'हर इलाके के लिए घंटे-दर-घंटे PM2.5 पूर्वानुमान, कौन अस्वस्थ हवा में साँस ले रहा है, और बाहर निकलने का सबसे साफ़ समय।',
-  cityBtn: '3D जीवंत शहर देखें ▸', mapH: 'पूर्वानुमान नक्शा', mapSub: 'दिन भर प्रदूषण कैसे बदलता है, देखने के लिए समय स्लाइडर खिसकाएँ। स्थानीय पूर्वानुमान और बाहर जाने के सबसे अच्छे समय के लिए नक्शे पर कहीं भी क्लिक करें।',
+  cityBtn: '3D जीवंत शहर देखें ▸', allH: 'चारों स्टेशन', allSub: 'पिछले 3 दिन का माप और 12 नवंबर तक का पूर्वानुमान। पूरा दायरा हर त्योहार-उछाल दिखाता है; हर चार्ट का अपना पैमाना है।', vFull: 'पूरा दायरा', vZoom: 'पूर्वानुमान पर ज़ूम', details: 'विवरण खोलें ↑', mapH: 'पूर्वानुमान नक्शा', mapSub: 'दिन भर प्रदूषण कैसे बदलता है, देखने के लिए समय स्लाइडर खिसकाएँ। स्थानीय पूर्वानुमान और बाहर जाने के सबसे अच्छे समय के लिए नक्शे पर कहीं भी क्लिक करें।',
   lyParks: 'उद्यान और मियावाकी वन', lyBus: 'BEST बस स्टॉप', lyPin: 'पिनकोड क्षेत्र', lyFill: 'कूड़ा डंपिंग मैदान', dump: 'डंपिंग मैदान',
   expH: 'कौन यह हवा साँस में ले रहा है?', expSub: 'चुने गए दिन हर वायु-गुणवत्ता श्रेणी में रहने वाले लोग (WorldPop 2026 अनुमान, 1 किमी ग्रिड)।',
   topPin: 'सबसे ज़्यादा प्रभावित पिनकोड क्षेत्र', dwH: 'दिवाली के बाद: हवा कितनी जल्दी साफ़ होती है?',
@@ -326,7 +338,7 @@ const T = {
   park: 'उद्यान', miyawaki: 'मियावाकी वन', zoo: 'चिड़ियाघर', stop: 'बस स्टॉप', depot: 'बस डिपो', pmAt: 'इस घंटे PM2.5' },
  mr: { tagline: 'मुंबई स्वच्छ-हवा अंदाज', h1: 'पुढच्या 48 तासांत मुंबईची हवा किती स्वच्छ असेल?',
   intro: 'प्रत्येक भागासाठी तासागणिक PM2.5 अंदाज, कोण अस्वच्छ हवा श्वासात घेत आहे, आणि बाहेर पडण्याची सर्वात स्वच्छ वेळ.',
-  cityBtn: '3D जिवंत शहर पाहा ▸', mapH: 'अंदाज नकाशा', mapSub: 'दिवसभरात प्रदूषण कसे बदलते ते पाहण्यासाठी वेळेचा स्लायडर सरकवा. स्थानिक अंदाज आणि बाहेर जाण्याच्या सर्वोत्तम वेळेसाठी नकाशावर कुठेही क्लिक करा.',
+  cityBtn: '3D जिवंत शहर पाहा ▸', allH: 'चारही स्टेशन', allSub: 'मागील 3 दिवसांचे मोजमाप आणि 12 नोव्हेंबरपर्यंतचा अंदाज. पूर्ण मर्यादा प्रत्येक सणातील उसळी दाखवते; प्रत्येक चार्टचे स्वतःचे प्रमाण आहे.', vFull: 'पूर्ण मर्यादा', vZoom: 'अंदाजावर झूम', details: 'तपशील उघडा ↑', mapH: 'अंदाज नकाशा', mapSub: 'दिवसभरात प्रदूषण कसे बदलते ते पाहण्यासाठी वेळेचा स्लायडर सरकवा. स्थानिक अंदाज आणि बाहेर जाण्याच्या सर्वोत्तम वेळेसाठी नकाशावर कुठेही क्लिक करा.',
   lyParks: 'उद्याने आणि मियावाकी वने', lyBus: 'बेस्ट बस थांबे', lyPin: 'पिनकोड क्षेत्रे', lyFill: 'कचराभूमी (डंपिंग ग्राउंड)', dump: 'कचराभूमी',
   expH: 'ही हवा कोण श्वासात घेत आहे?', expSub: 'निवडलेल्या दिवशी प्रत्येक हवा-गुणवत्ता श्रेणीत राहणारे लोक (WorldPop 2026 अंदाज, 1 किमी ग्रिड).',
   topPin: 'सर्वाधिक प्रभावित पिनकोड क्षेत्रे', dwH: 'दिवाळीनंतर: हवा किती लवकर स्वच्छ होते?',
@@ -500,6 +512,27 @@ function renderQLegend() {
 }
 
 /* ---------------- place panel ---------------- */
+let viewMode = 'full';   // 'full' = whole range, nothing clipped; 'zoom' = scaled to the forecast
+function renderViewSegs() { document.querySelectorAll('.viewSeg').forEach(seg => { seg.textContent = '';
+  [['full', t('vFull')], ['zoom', t('vZoom')]].forEach(([v, lab]) => { const b = el('button', { 'aria-pressed': v === viewMode }, lab);
+    b.onclick = () => { viewMode = v; renderViewSegs(); renderPlace(); renderAllStations(); }; seg.append(b); }); }); }
+function renderAllStations() {
+  const box = $('#allCharts'); box.textContent = ''; const r0i = Math.max(0, RH.length - 72), obsH = RH.slice(r0i);
+  const lg = $('#allLegend'); lg.textContent = '';
+  [[t('observed'), css('--ink-2'), ''], [t('forecast'), css('--s1'), ''], [t('range'), css('--s1'), 'band']].forEach(([n, c, cls]) => {
+    const s = el('span'); const k = el('i', cls ? { class: cls } : {}); k.style.background = c; s.append(k, n); lg.append(s); });
+  ST.forEach((s, k) => {
+    const card = el('div', { class: 'card' }), head = el('div', { class: 'sthead' }), fc = FV[k], obs = RV[k].slice(r0i);
+    const dm = mean(dayIdx(selDay).map(i => fc[i])), left = el('div');
+    left.append(el('h3', {}, s.short), badge(qIdx(dm)), el('span', { class: 'muted' }, ` · ${fmtDay(parseH(selDay + 'T12:00'))} ${r0(dm)} µg/m³`));
+    const a = el('a', { href: '#' }, t('details')); a.onclick = ev => { ev.preventDefault(); selectPlace(s.lat, s.lon, s.short, t('station')); $('#placeTitle').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    head.append(left, a); const ch = el('div', { class: 'chart' }); card.append(head, ch); box.append(card);
+    const fmax = Math.max(...fc.filter(v => v != null)) * S.forecast.high, omax = Math.max(0, ...obs.filter(v => v != null));
+    lineChart(ch, { height: 200, qBands: true, yMax: viewMode === 'zoom' ? niceMax(Math.max(60, fmax * 1.15, Math.min(omax, fmax * 1.6))) : undefined,
+      series: [{ name: t('observed'), color: css('--ink-2'), x: obsH, y: obs, lastLabel: v => t('lastRead')(r0(v)) },
+               { name: t('forecast'), color: css('--s1'), x: FH, y: fc, band: [fc.map(v => v == null ? null : v * S.forecast.low), fc.map(v => v == null ? null : v * S.forecast.high)] }] });
+  });
+}
 let place = { lat: ST[0].lat, lon: ST[0].lon, name: ST[0].short, kind: null };
 function selectPlace(lat, lon, name, kind, noScroll) {
   place = { lat, lon, name, kind };
@@ -518,7 +551,7 @@ function renderPlace() {
   const obsH = RH.slice(r0i), obs = seriesAt(w, RV.map(v => v.slice(r0i)), RH.length - r0i);
   // scale to the forecast; festival spikes in the observed part are clipped (the tooltip still shows them)
   const fmax = Math.max(...fc.filter(v => v != null)) * S.forecast.high, omax = Math.max(0, ...obs.filter(v => v != null));
-  const yMax = niceMax(Math.max(60, fmax * 1.15, Math.min(omax, fmax * 1.6)));
+  const yMax = viewMode === 'zoom' ? niceMax(Math.max(60, fmax * 1.15, Math.min(omax, fmax * 1.6))) : undefined;
   lineChart($('#placeChart'), { yMax,
     series: [
       { name: t('observed'), color: css('--ink-2'), x: obsH, y: obs, lastLabel: v => t('lastRead')(r0(v)) },
@@ -595,12 +628,12 @@ function lineChart(box, o) {
     const peaks = []; let run = null; const flush = () => { if (run) peaks.push({ x: X(+s.x[run.i]), v: run.v }); run = null; };
     s.y.forEach((v, i) => { if (v != null && v > yMax) { if (!run || v > run.v) run = { i, v }; } else flush(); }); flush();   // highest point of each clipped run
     const placed = []; peaks.sort((a, b) => b.v - a.v).forEach(p => { if (placed.every(q => Math.abs(q - p.x) > 38)) { placed.push(p.x);   // biggest peaks win the label space
-      const tx = svgEl('text', { x: p.x, y: m.t + 9, 'text-anchor': 'middle', style: `fill:${css('--ink')};font-weight:600` }); tx.textContent = '▲' + r0(p.v); svg.append(tx); } });
+      const tx = svgEl('text', { x: p.x, y: m.t + 9, 'text-anchor': 'middle', style: `fill:${css('--ink')};font-weight:600;paint-order:stroke;stroke:${css('--surface')};stroke-width:4px;stroke-linejoin:round` }); tx.textContent = '▲' + r0(p.v); svg.append(tx); } });
     // label the last observed reading so the jump to the forecast is explained
     if (s.lastLabel) { let j = s.y.length - 1; while (j >= 0 && s.y[j] == null) j--;
       if (j >= 0) { const v = s.y[j], x = X(+s.x[j]), y = Math.max(m.t + 22, Y(Math.min(v, yMax)) - 6);
         svg.append(svgEl('circle', { cx: x, cy: Y(Math.min(v, yMax)), r: 4, fill: s.color, stroke: css('--surface'), 'stroke-width': 2 }));
-        const tx = svgEl('text', { x: x - 6, y, 'text-anchor': 'end', style: `fill:${css('--ink')};font-weight:600` }); tx.textContent = s.lastLabel(v); svg.append(tx); } }
+        const tx = svgEl('text', { x: x - 8, y: y - 4, 'text-anchor': 'end', style: `fill:${css('--ink')};font-weight:600;paint-order:stroke;stroke:${css('--surface')};stroke-width:4px;stroke-linejoin:round` }); tx.textContent = s.lastLabel(v); svg.append(tx); } }
   });
   const cross = svgEl('line', { y1: m.t, y2: H - m.b, stroke: css('--ink-2'), 'stroke-width': 1, opacity: 0 }); svg.append(cross);
   const dots = o.series.map(s => { const c = svgEl('circle', { r: 4, fill: s.color, stroke: css('--surface'), 'stroke-width': 2, opacity: 0 }); svg.append(c); return c; });
@@ -628,7 +661,7 @@ function lineChart(box, o) {
   if (o.legend) { o.legend.textContent = ''; o.series.forEach(s => { const sp = el('span'); const k = el('i'); k.style.background = s.color; sp.append(k, s.name); o.legend.append(sp); });
     if (o.series.some(s => s.band)) { const sp = el('span'); const k = el('i', { class: 'band' }); k.style.background = css('--s1'); sp.append(k, o.bandName); o.legend.append(sp); } }
 }
-function niceMax(v) { const p = 10 ** Math.floor(Math.log10(v)); const n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+function niceMax(v) { const p = 10 ** Math.floor(Math.log10(v)); const n = v / p; return [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 10].find(s => n <= s + 1e-9) * p; }
 function ticksY(max) { const st = niceMax(max / 4); const out = []; for (let v = 0; v <= max + 1e-9; v += st) out.push(Math.round(v)); return out; }
 
 /* ---------------- exposure ---------------- */
@@ -744,8 +777,8 @@ function renderGemEx() {
     const a = el('div', { class: 'a' }); mdBold(a, it.a); c.append(a); box.append(c); });
 }
 /* ---------------- render ---------------- */
-function renderAll() { renderGemEx(); renderHero(); renderQLegend(); paintMap(); renderPlace(); renderExposure(); buildPinLayer(); renderDiwali(); renderAcc(); }
-let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderPlace(); renderDiwali(); renderAcc(); }, 150); });
+function renderAll() { renderGemEx(); renderViewSegs(); renderHero(); renderQLegend(); paintMap(); renderPlace(); renderAllStations(); renderExposure(); buildPinLayer(); renderDiwali(); renderAcc(); }
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderPlace(); renderAllStations(); renderDiwali(); renderAcc(); }, 150); });
 applyLang();
 selectPlace(ST[0].lat, ST[0].lon, ST[0].short, t('station'), true);
 if (QP.get('debug')) setTimeout(() => { document.title = 'W' + document.documentElement.scrollWidth; }, 2500);
