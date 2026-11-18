@@ -95,3 +95,5 @@ SAANS_SITE=docs python creative/scripts/build_aq.py
 * WorldPop 2026 values are modelled projections (release R2025A, labelled alpha), and they undercount Mumbai.
 * 3D-GloBFP heights are model estimates for 2020. The 3D view draws the 110,000 largest buildings, 2.5× taller.
 * Saans gives general guidance based on CPCB health advisories. **It is not a medical service.**
+
+<!-- Project Saans: Air Quality Forecasting -->
